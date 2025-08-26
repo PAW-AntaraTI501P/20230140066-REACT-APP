@@ -72,23 +72,25 @@ const TodoPage = () => {
       .catch((err) => console.error("Error updating todo:", err));
   };
 
-  const handleUpdateTodo = (id, newTask) => {
-    fetch(`/api/todos/${id}`, {
+  const handleUpdateTodo = async (id, newTask) => {
+  try {
+    const response = await fetch(`http://localhost:3001/api/todos/${id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ task: newTask }),
-    })
-      .then(() => {
-        setTodos(
-          todos.map((todo) =>
-            todo.id === id ? { ...todo, task: newTask } : todo
-          )
-        );
-      })
-      .catch((err) => console.error("Error updating todo:", err));
-  };
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ task: newTask, completed: false }), // <-- kirim task
+    });
+
+    if (!response.ok) throw new Error("Gagal update todo");
+    const updated = await response.json();
+
+    setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, task: updated.task } : t))
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 
   if (loading) {
     return <div style={{ textAlign: "center" }}>Loading...</div>;
